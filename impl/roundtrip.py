@@ -36,7 +36,7 @@ def convert_usd_to_gltf(input_path, output_path):
     bpy.ops.wm.usd_import(filepath=input_path, import_textures_dir="//textures")
 
     ensure_directory_exists(output_path)
-    bpy.ops.export_scene.gltf(filepath=output_path, export_animations=True)
+    bpy.ops.export_scene.gltf(filepath=output_path, export_animations=True, export_frame_range=False)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Perform the roundtrip')
@@ -70,7 +70,7 @@ def run_single():
     create_render(output_gltf_path, "./render_after", camera_setup)
 
 
-def run_single_model_variant(input_gltf_path, usd_path, output_gltf_path, model_name):
+def run_single_model_variant_internal(input_gltf_path, usd_path, output_gltf_path, model_name):
 
     print("run_single_model_variant")
     print("input_gltf_path  "+ input_gltf_path)
@@ -80,18 +80,41 @@ def run_single_model_variant(input_gltf_path, usd_path, output_gltf_path, model_
 
     convert_gltf_to_usd(input_gltf_path, usd_path)
     convert_usd_to_gltf(usd_path, output_gltf_path)
+    
+    create_render_views(input_gltf_path, model_name, "_input")
+    create_render_views(output_gltf_path, model_name, "_output")
+
+
+def create_render_views(input_gltf_path, model_name, render_name_suffix):
 
     render_output_directory = "./Data/renders"
     ensure_directory_exists(render_output_directory)
+    render_file_name_prefix = os.path.join(render_output_directory, model_name)
 
     euler = ( math.radians(90), 0, 0)
     camera_setup = compute_camera_setup(input_gltf_path, euler)
 
-    input_render_name = os.path.join(render_output_directory, model_name + "_input");
-    create_render(input_gltf_path, input_render_name, camera_setup)
+    full_render_name_prefix = render_file_name_prefix + "_front" + render_name_suffix
+    create_render(input_gltf_path, full_render_name_prefix, camera_setup)
 
-    output_render_name = os.path.join(render_output_directory, model_name + "_output");
-    create_render(output_gltf_path, output_render_name, camera_setup)
+    euler = ( 0, 0, 0)
+    camera_setup = compute_camera_setup(input_gltf_path, euler)
+
+    full_render_name_prefix = render_file_name_prefix + "_top" + render_name_suffix
+    create_render(input_gltf_path, full_render_name_prefix, camera_setup)
+
+    euler = ( math.radians(90), 0, math.radians(90))
+    camera_setup = compute_camera_setup(input_gltf_path, euler)
+
+    full_render_name_prefix = render_file_name_prefix + "_right" + render_name_suffix
+    create_render(input_gltf_path, full_render_name_prefix, camera_setup)
+
+
+def run_single_model_variant(input_gltf_path, usd_path, output_gltf_path, model_name):
+    try:
+        run_single_model_variant_internal(input_gltf_path, usd_path, output_gltf_path, model_name)
+    except RuntimeError as e:
+        print("ERROR: " + str(e))
 
 
   
@@ -116,6 +139,7 @@ def run_single_model(input_gltf_path, usd_path, output_gltf_path, model_name, va
     full_usd_path = os.path.join(usd_path, model_name, variant_name, base_file_name + ".usd")
     full_output_gltf_path = os.path.join(output_gltf_path, model_name, variant_name, base_file_name + ".glb")
     run_single_model_variant(full_input_gltf_path, full_usd_path, full_output_gltf_path, model_name)
+
 
 
 
@@ -239,7 +263,8 @@ def create_render(input_gltf_path, output_file_name_prefix, camera_setup):
     setup_environment()
     init_camera()
     apply_camera_setup(camera_setup)
-    render_single_frame(output_file_name_prefix);
+    render_single_frame(output_file_name_prefix)
+
 
 
 
