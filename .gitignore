@@ -1,5 +1,7 @@
-/impl/Data/input_gltf
-/impl/Data/usd
-/impl/Data/output_gltf
-/impl/Data/renders
-
+/impl/Data/input_gltf/**
+!/impl/Data/input_gltf/README.md
+/impl/Data/usd/
+/impl/Data/output_gltf/
+/impl/Data/renders/
+/impl/__pycache__
+/.vscode
