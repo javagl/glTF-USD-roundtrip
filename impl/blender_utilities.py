@@ -47,14 +47,6 @@ def init_camera():
     bpy.context.scene.camera = camera_object
 
 
-
-def find_3d_area():
-    for area in bpy.context.window.screen.areas:
-        if area.type == 'VIEW_3D':
-            return area
-
-        
-
 def fit_active_camera():     
     """
     fit_active_camera Fit the active camera to view all objects.
@@ -132,6 +124,7 @@ def compute_camera_setup(input_gltf_path, euler=(0,0,0)):
         "rotation_euler": tuple(camera_object.rotation_euler) 
     }
     return camera_setup
+
 
 def apply_camera_setup(camera_setup):
     """
